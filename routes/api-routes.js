@@ -1,10 +1,10 @@
-const db = require("../models");
-//const mongojs = require("mongojs")
+const Workout = require("../models");
+const mongojs = require("mongojs")
 
 module.exports = function (app) {
 
     app.get("/api/workouts", function (req, res) {
-        db.Workout.find({})
+        Workout.find({})
             .then(dbWorkout => {
                 res.json(dbWorkout);
             })
@@ -15,32 +15,42 @@ module.exports = function (app) {
 
     app.put("/api/workouts/:id", (req, res) => {
         //MongoDB to show specific workout
-        var currWorkoutId = req.params.id;
-        console.log(currWorkoutId);
-        var newExercise = req.body;
-        console.log(newExercise);
-        db.Workout.findOneAndUpdate({
-            _id: currWorkoutId
-        }, { $push: { exercises: newExercise } }, { new: true })
-            .then(update => {
-                res.json(update);
-            })
-    });
-
-
-    app.post("/api/workouts", function (req, res) {
         console.log(req.body);
-        db.Workout.insert(req.body)
-            .then(newWorkout => {
-                res.json(newWorkout);
+        Workout.findOneAndUpdate({
+            _id: mongojs.ObjectId(req.params.id)
+        },
+            {
+                $push: {
+                    exercises:
+                    {
+                        type: req.body.type || null,
+                        name: req.body.name || null,
+                        duration: req.body.duration || null,
+                        weight: req.body.weight || null,
+                        sets: req.body.sets || null,
+                        reps: req.body.reps || null,
+                        distance: req.body.distance || null,
+                    }
+                }
+            })
+            .then(dbWorkout => {
+                res.json(dbWorkout);
             })
             .catch(err => {
                 res.json(err);
             });
     });
 
+
+    app.post("/api/workouts", function (req, res) {
+        Workout.find()
+            .then(dbWorkout => {
+                res.json(dbWorkout);
+            });
+    });
+
     app.get("/api/workouts/range", function (req, res) {
-        db.Workout.find({})
+        Workout.find()
             .then(dbWorkout => {
                 res.json(dbWorkout);
             })
